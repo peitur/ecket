@@ -1,6 +1,6 @@
 
 <h1>
-Bucket sortigin experiment done concurrently
+Concurrent Bucket sorting Experiment, in Erlang
 </h1>
 
 This is an experiment in implementing and testing a simple somewhat generic concurent b-tree (bucket tree) implementation in Erlang
