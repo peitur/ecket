@@ -76,28 +76,39 @@ search( ) ->
 	init(),
 	FunList = [
 		fun(E) -> fun1(E) end,
-		fun(E) -> fun2(E) end
-%		fun(E) -> fun3(E) end,
-%		fun(E) -> fun4(E) end
+		fun(E) -> fun2(E) end,
+		fun(E) -> fun3(E) end,
+		fun(E) -> fun4(E) end
 	],
 
 	case bctree_bucket:start_bucket( self(), test0, FunList, [] ) of
 		{ok, Pid} ->
 
+			StartNow = calendar:datetime_to_gregorian_seconds( erlang:localtime() ),
+
 			List1 = load_file( ?INFILE2 ),
-			List0 = load_file( ?INFILE0 ),
+			List0 = load_file( ?INFILE2 ),
 
 			io:format( "INFILE: ~p ~n", [erlang:length(List1)] ),
+			io:format( "REFFILE: ~p ~n", [erlang:length(List0)] ),
+
+			FileLoadedNow = calendar:datetime_to_gregorian_seconds( erlang:localtime() ),
+
 			[ bctree_bucket:add_item( Pid, E, 1 ) || E <- List1 ],
 
-			Size = bctree_bucket:get_size( Pid ),
-			io:format("STORE SIZE:::: ~p ~n", [Size]),
+			LoadedNow = calendar:datetime_to_gregorian_seconds( erlang:localtime() ),
 
-			io:format("Searching for ~p items ~n", [erlang:length( List0 )]),		
+
+			Size = bctree_bucket:get_size( Pid ),
+%			io:format("STORE SIZE:::: ~p ~n", [Size]),
+
+			SizeNow = calendar:datetime_to_gregorian_seconds( erlang:localtime() ),
+
+			io:format("Searching for ~p items amoung ~p  ~n", [erlang:length( List0 ),erlang:length( List1 )]),		
 			lists:foreach( fun( E ) -> 
 							
 							case bctree_bucket:get_item( Pid, E ) of
-								{ok, Data} -> io:format( "Found: ~p : ~p ~n", [E, Data] );
+								{ok, Data} -> ok;%io:format( "Found: ~p : ~p ~n", [E, Data] );
 								{error, Reason} -> io:format("Error: ~p : ~p ~n", [E, Reason] );
 								Other -> io:forma("Unknown: ~p : ~p ~n", [E, Other])
 							end
@@ -105,8 +116,22 @@ search( ) ->
 						end,
 					List0 ),
 
+			SearchedNow = calendar:datetime_to_gregorian_seconds( erlang:localtime() ),
 
-%			bctree_bucket:stop( Pid ),
+			io:format("Searched for ~p items amoung ~p ~n", [erlang:length( List0 ), erlang:length(List1)]),		
+
+
+			bctree_bucket:stop( Pid ),
+
+			ExitNow = calendar:datetime_to_gregorian_seconds( erlang:localtime() ),
+
+			io:format("===================================================~n"),			
+			io:format("Total time: ~p ~n", [ExitNow - StartNow]),
+			io:format("Loaded time: ~p ~n", [FileLoadedNow - StartNow]),
+			io:format("Size time: ~p ~n", [SizeNow - LoadedNow]),
+			io:format("Search time: ~p ~n", [SearchedNow - SizeNow]),
+			io:format("===================================================~n"),			
+
 
 			ok;
 		{error, Reason} -> {error, Reason}

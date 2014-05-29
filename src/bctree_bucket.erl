@@ -267,7 +267,7 @@ handle_cast(Msg, State) ->
 handle_info( {'EXIT', Pid, Reason}, State ) ->
 	{noreply, State};
 
-handle_info( {'DOWN', MonitorReference, process, Pid, Reason}, State ) ->
+handle_info( {'DOWN', MonitorReference, Process, Pid, Reason}, State ) ->
 	{noreply, State};
 
 
