@@ -67,7 +67,7 @@ init([]) ->
 
     Bukcet = {'bctree_bucket',{'bctree_bucket',start_link,[]}, temporary,2000,worker,['bctree_bucket']},
 
-    {ok,{{simple_one_for_onel,0,1}, [Bukcet] }}.
+    {ok,{{simple_one_for_one,0,1}, [Bukcet] }}.
 
 %% ====================================================================
 %% Internal functions

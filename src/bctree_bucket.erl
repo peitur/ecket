@@ -131,6 +131,8 @@ init([Parent, Name, GeneratorList, Options]) ->
 	Reason :: term().
 %% ====================================================================
 
+
+%% Item level, creating and adding the data 
 handle_call( {add, Key, Item}, _From, #state{ generator = undefined, children = Children } = State) ->
 	case Children of
 		[] ->
@@ -146,6 +148,7 @@ handle_call( {add, Key, Item}, _From, #state{ generator = undefined, children = 
 		Other -> {reply, Other, State }
 	end;
 
+%% Creating bucket, not yet finished with all generators
 handle_call( {add, Key, Item}, _From, #state{ generator = Generator, sub_generators = SubGen, children = Children } = State) ->
 	NameKey = Generator( Key ),
 	case lists:keyfind( NameKey, 2, Children ) of
@@ -153,6 +156,7 @@ handle_call( {add, Key, Item}, _From, #state{ generator = Generator, sub_generat
 
 			case bctree_bucket:start_bucket( self(), NameKey, State#state.sub_generators, [] ) of
 				{ok, Pid} -> 
+
 					bctree_bucket:add_item( Pid, Key, Item ),
 					{reply, {ok, Key}, State#state{ children = [{bucket, NameKey, Pid}|Children] } };
 
@@ -193,6 +197,7 @@ handle_call( {get,size}, _From, State ) ->
 		Size -> {reply, {ok, Size }, State }
 	end;
 
+	
 handle_call(Request, From, State) ->
     Reply = {error, not_implemented},
     {reply, Reply, State}.
@@ -282,7 +287,7 @@ x_teminate_children( [Child|List]) -> x_teminate_children( List ).
 
 x_calc_size( Children ) -> x_calc_size( Children, [] ).
 
-x_calc_size( [], Result ) -> Result;
+x_calc_size( [], Result ) -> lists:flatten( Result );
 
 x_calc_size( [{item, Pid}|List], Result ) ->
 	case bctree_item:size( Pid ) of
