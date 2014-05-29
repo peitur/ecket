@@ -165,7 +165,7 @@ handle_call( {add, Key, Item}, _From, #state{ generator = Generator, sub_generat
 			{reply, {ok, Key}, State}
 
 	end;
-
+	
 
 
 handle_call( {del, Key, Item}, _From, State ) ->
@@ -178,8 +178,7 @@ handle_call( {exists, Key} , _From, #state{ generator = Generator } = State ) ->
 
 handle_call( {clear}, _From, State ) ->
 	case x_teminate_children( State#state.children ) of
-		ok -> {reply, ok, State#state{ children = [] } };
-		{error, Reason} -> {reply, {error, Reason}, State}
+		ok -> {reply, ok, State#state{ children = [] } }
 	end;
 
 
@@ -191,7 +190,6 @@ handle_call( {get,parent}, _From, State ) -> {reply, {ok, State#state.parent}, S
 handle_call( {get,name}, _From, State ) -> {reply, {ok, State#state.name}, State };
 handle_call( {get,size}, _From, State ) -> 
 	case x_calc_size( State#state.children ) of
-		{error, Reason} -> {reply, {error, Reason}, State };
 		Size -> {reply, {ok, Size }, State }
 	end;
 
@@ -293,7 +291,7 @@ x_calc_size( [{item, Pid}|List], Result ) ->
 	end;
 
 x_calc_size( [{bucket, Name, Pid}|List], Result ) ->
-	case bctree_bucket:size( Pid ) of
+	case bctree_bucket:get_size( Pid ) of
 		{ok, Size} -> x_calc_size( List, [Size|Result] );
 		{error, Reason} -> x_calc_size( List, Result )
 	end;

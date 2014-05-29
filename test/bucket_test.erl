@@ -24,8 +24,16 @@
 	]).
 
 
+-define( INFILE1, "american" ).
+-define( INFILE2, "english").
+
+
+init( ) ->
+	bctree_bucket_sup:start_link().
+
 add() -> 
-	ok.
+	
+	bctree_bucket:start_bucket( )
 
 search( ) -> 
 	ok-

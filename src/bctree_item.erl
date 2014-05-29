@@ -66,7 +66,7 @@ del( Pid, Key ) -> gen_server:call( Pid, {del, Key}).
 get( Pid, Key ) when erlang:is_list( Key ) -> 
 	case get( Pid, erlang:list_to_binary( Key) ) of
 		false -> false;
-		{ok, {Key, Item}} -> {ok, { erlang:binary_to_list( Key ), Item } };
+		{ok, {Key, Item}} -> {ok, { Key, Item } };
 		{ok, Item} -> {ok,  Item };
 		Other -> Other
 	end;

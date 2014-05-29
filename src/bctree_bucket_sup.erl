@@ -1,4 +1,4 @@
-%   bctree, concurrent b-tree:ish saerch, bucket supervisor implementation
+%   bctree, concurrent b-tree:ish search, bucket supervisor implementation
 % 
 %    Copyright (C) 2014 Peter Bartha <peitur@gmail.com>
 %

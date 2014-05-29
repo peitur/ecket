@@ -26,12 +26,8 @@
 	search/0
 ]).
 
--define( INFILE, "/home/peter/pering/erlang/trees/bctree/test/filelist.txt" ).
--define( SEARCH, [
-					"X11",
-					"sudoers",
-					"nothing"
-				 ] ).
+-define( INFILE, "english" ).
+-define( SEARCH, "american" ).
 	
 	
 start() -> ok.
@@ -41,6 +37,7 @@ stop() -> ok.
 add() ->
 
 	List1 = load_file( ?INFILE ),
+
 	bctree_item_sup:start_link([]),
 
 	io:format( "1. Creating Item store for ~p elements ~n", [erlang:length(List1) ] ),
@@ -66,7 +63,7 @@ del() -> ok.
 
 get() ->
 	List1 = load_file( ?INFILE ),
-	List2 = ?SEARCH,
+	List2 = load_file( ?SEARCH ),
 
 	bctree_item_sup:start_link([]),
 
