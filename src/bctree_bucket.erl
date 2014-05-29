@@ -30,6 +30,7 @@
 		stop/1, stop/2,
 		add_item/3,
 		del_item/2,
+		get_item/2,
 		exists/2
 	]).
 
@@ -64,7 +65,7 @@ del_item( Bucket, Key ) ->
 	gen_server:call( Bucket, {del, Key} ).
 
 get_item( Bucket, Key ) ->
-	gen_server:call( Bucket, {get, Key} ).
+	gen_server:call( Bucket, {get, item, Key} ).
 
 exists( Bucket, Key ) ->
 	gen_server:call( Bucket, {exists, Key}).
@@ -197,7 +198,39 @@ handle_call( {get,size}, _From, State ) ->
 		Size -> {reply, {ok, Size }, State }
 	end;
 
+handle_call( {get, item, _}, _From, #state{ generator = undefined, children = []} = State ) ->
+	{reply, {ok, false}, State};
+
+
+handle_call( {get, item, Key}, _From, #state{ generator = undefined, children = Children} = State ) ->
+	try lists:nth( 1, Children ) of
+		{item, Pid} -> 
+			case bctree_item:get( Pid, Key ) of
+				false -> {reply, {ok, false}, State};
+				{ok, Data} -> {reply, {ok, Data}, State};
+				{error,Reason} -> {reply, {error, Reason}, State}
+			end;
+		_Other -> {reply, {ok, false}, State}
+	catch 
+		Error:Reason ->
+			{reply, {ok, false}, State}
+	end;
 	
+
+handle_call( {get, item, Key}, _From, #state{ generator = Generator, children = Children} = State ) ->
+	NameKey = Generator( Key ),
+	case lists:keyfind( NameKey, 2, Children ) of
+		{bucket, NameKey, Pid} ->
+			case bctree_bucket:get_item( Pid, Key ) of
+				{ok, Data} -> {reply, {ok, Data}, State};
+				{error, Reason} -> {reply, {error, Reason}, State}
+			end;
+		_Other ->
+			{reply, {ok, false}, State}
+	end;
+
+
+
 handle_call(Request, From, State) ->
     Reply = {error, not_implemented},
     {reply, Reply, State}.
@@ -254,7 +287,6 @@ handle_info(Info, State) ->
 %% ====================================================================
 terminate(Reason, State) ->
    	x_teminate_children( State#state.children ).
-
 
 %% code_change/3
 %% ====================================================================

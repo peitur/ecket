@@ -43,6 +43,7 @@ fun4(E) when erlang:length(E) > 5 -> string:sub_string(E, 4, 4);
 fun4(_) -> undefined.
 
 init( ) ->
+	application:start( sasl ),
 	bctree_bucket_sup:start_link([]),
 	bctree_item_sup:start_link([]).
 
@@ -64,6 +65,8 @@ add() ->
 
 			Size = bctree_bucket:get_size( Pid ),
 			io:format("STORE SIZE:::: ~p ~n", [Size]),
+
+			bctree_bucket:stop( Pid ),
 
 			ok;
 		{error, Reason} -> {error, Reason}
@@ -89,6 +92,21 @@ search( ) ->
 
 			Size = bctree_bucket:get_size( Pid ),
 			io:format("STORE SIZE:::: ~p ~n", [Size]),
+
+			io:format("Searching for ~p items ~n", [erlang:length( List0 )]),		
+			lists:foreach( fun( E ) -> 
+							
+							case bctree_bucket:get_item( Pid, E ) of
+								{ok, Data} -> io:format( "Found: ~p : ~p ~n", [E, Data] );
+								{error, Reason} -> io:format("Error: ~p : ~p ~n", [E, Reason] );
+								Other -> io:forma("Unknown: ~p : ~p ~n", [E, Other])
+							end
+
+						end,
+					List0 ),
+
+
+%			bctree_bucket:stop( Pid ),
 
 			ok;
 		{error, Reason} -> {error, Reason}
