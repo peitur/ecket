@@ -149,7 +149,7 @@ handle_call( {get, Key}, _From, State ) ->
 	end;
 
 handle_call( {stop, Reason}, _From, State ) ->
-	{stop, Reason, State};
+	{stop, Reason, ok, State};
 
 handle_call(Request, From, State) ->
     Reply = {error, not_implemented},

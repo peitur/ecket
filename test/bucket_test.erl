@@ -87,7 +87,7 @@ search( ) ->
 			StartNow = calendar:datetime_to_gregorian_seconds( erlang:localtime() ),
 
 			List1 = load_file( ?INFILE2 ),
-			List0 = load_file( ?INFILE2 ),
+			List0 = load_file( ?INFILE1 ),
 
 			io:format( "INFILE: ~p ~n", [erlang:length(List1)] ),
 			io:format( "REFFILE: ~p ~n", [erlang:length(List0)] ),
@@ -99,15 +99,15 @@ search( ) ->
 			LoadedNow = calendar:datetime_to_gregorian_seconds( erlang:localtime() ),
 
 
-			Size = bctree_bucket:get_size( Pid ),
-%			io:format("STORE SIZE:::: ~p ~n", [Size]),
+			{ok, Size} = bctree_bucket:get_size( Pid ),
+			io:format("STORE SIZE: ~p / ~p ~n", [ lists:sum( Size ), erlang:length( Size) ]),
 
 			SizeNow = calendar:datetime_to_gregorian_seconds( erlang:localtime() ),
 
 			io:format("Searching for ~p items amoung ~p  ~n", [erlang:length( List0 ),erlang:length( List1 )]),		
 			lists:foreach( fun( E ) -> 
-							
 							case bctree_bucket:get_item( Pid, E ) of
+								{ok, false} -> io:format( "NotFound: ~p ~n", [E] ); 
 								{ok, Data} -> ok;%io:format( "Found: ~p : ~p ~n", [E, Data] );
 								{error, Reason} -> io:format("Error: ~p : ~p ~n", [E, Reason] );
 								Other -> io:forma("Unknown: ~p : ~p ~n", [E, Other])

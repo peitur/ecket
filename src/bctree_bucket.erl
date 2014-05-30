@@ -314,7 +314,7 @@ x_teminate_children( [{bucket, _Name, Pid}|List] ) ->
 	bctree_bucket:stop( Pid ),
 	x_teminate_children( List );
 
-x_teminate_children( [Child|List]) -> x_teminate_children( List ).
+x_teminate_children( [_|List] ) -> x_teminate_children( List ).
 
 
 x_calc_size( Children ) -> x_calc_size( Children, [] ).
