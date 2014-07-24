@@ -24,13 +24,13 @@
 %% API functions
 %% ====================================================================
 -export([
-	start_link/1,
-	stop/0, 
+	start_link/0, start_link/1,
 	start_bucket/4
 ]).
 
 -define( SERVER, ?MODULE ).
 
+start_link( ) -> start_link([]).
 start_link( Arg ) ->
 	supervisor:start_link( {local,?SERVER}, ?MODULE, Arg ).
 
@@ -40,7 +40,6 @@ start_link( Arg ) ->
 start_bucket( Parent, Name, GeneratorList, Options ) ->
 	supervisor:start_child( ?SERVER, [Parent, Name, GeneratorList, Options ]).
 
-stop( ) -> ok.
 
 %% ====================================================================
 %% Behavioural functions 
@@ -62,12 +61,14 @@ stop( ) -> ok.
 				   | transient
 				   | temporary,
 	Modules :: [module()] | dynamic.
+
 %% ====================================================================
 init([]) ->
 
-    Bukcet = {'bctree_bucket',{'bctree_bucket',start_link,[]}, temporary,2000,worker,['bctree_bucket']},
+    Bucket = {'bctree_bucket',{'bctree_bucket',start_link,[]}, temporary,2000,worker,['bctree_bucket']},
 
-    {ok,{{simple_one_for_one,0,1}, [Bukcet] }}.
+    {ok,{{simple_one_for_one,0,1}, [Bucket] }}.
+
 
 %% ====================================================================
 %% Internal functions

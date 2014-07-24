@@ -25,7 +25,7 @@
 %% ====================================================================
 %% API functions
 %% ====================================================================
--export([start_link/1, stop/0]).
+-export([start_link/1]).
 
 
 
@@ -34,7 +34,6 @@
 start_link( Args ) ->
 	supervisor:start_link( {local, ?SERVER}, ?MODULE, Args ).
 
-stop( ) -> ok.
 %% ====================================================================
 %% Behavioural functions 
 %% ====================================================================
@@ -57,12 +56,11 @@ stop( ) -> ok.
 	Modules :: [module()] | dynamic.
 %% ====================================================================
 init([]) ->
-    MemStore = {'bctree_memstore',{'bctree_memstore',start_link,[]}, permanent,2000,worker,['bctree_memstore']},
 
-    BucketSup = {'bctree_bucket_sup',{'bctree_bucket_sup',start_link,[]}, permanent,2000,supervisor,['bctree_bucket_sup']},
-    ItemSup = {'bctree_item_sup',{'bctree_item_sup',start_link,[]}, permanent,2000,supervisor,['bctree_item_sup']},
+    BucketSup = {'bctree_bucket_sup',{'bctree_bucket_sup',start_link,[]}, permanent,2000 ,supervisor,['bctree_bucket_sup']},
+    ItemSup = {'bctree_item_sup',{'bctree_item_sup',start_link,[]}, permanent,2000 ,supervisor,['bctree_item_sup']},
 
-    Children = [MemStore, BucketSup],
+    Children = [ItemSup, BucketSup],
 
     {ok,{{one_for_all,0,1}, Children }}.
 

@@ -230,6 +230,9 @@ handle_call( {get, item, Key}, _From, #state{ generator = Generator, children = 
 	end;
 
 
+handle_call( {stop, Reason}, _From, State ) ->
+	
+	{stop, Reason, ok, State};
 
 handle_call(Request, From, State) ->
     Reply = {error, not_implemented},

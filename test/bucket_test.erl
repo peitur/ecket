@@ -19,13 +19,14 @@
 
 -export([
 		add/0,
-		search/0,
+		search/0, search2/0,
 		clear/0
 	]).
 
 -define( INFILE0, "slim" ).
 -define( INFILE1, "american" ).
 -define( INFILE2, "english").
+-define( INFILE3, "ameng").
 
 
 fun0(E) -> E.
@@ -44,8 +45,9 @@ fun4(_) -> undefined.
 
 init( ) ->
 	application:start( sasl ),
-	bctree_bucket_sup:start_link([]),
-	bctree_item_sup:start_link([]).
+	application:start( bctree ).
+%	bctree_bucket_sup:start_link([]),
+%	bctree_item_sup:start_link([]).
 
 add() -> 
 	init(),
@@ -136,6 +138,84 @@ search( ) ->
 			ok;
 		{error, Reason} -> {error, Reason}
 	end.
+
+
+search2( ) -> 
+	init(),
+	FunList = [
+		fun(E) -> fun1(E) end,
+		fun(E) -> fun2(E) end,
+		fun(E) -> fun3(E) end,
+		fun(E) -> fun4(E) end
+	],
+
+	case bctree_bucket:start_bucket( self(), test0, FunList, [] ) of
+		{ok, Pid} ->
+
+			StartNow = calendar:datetime_to_gregorian_seconds( erlang:localtime() ),
+
+			List0 = load_file( ?INFILE3 ),
+			List1 = load_file( ?INFILE2 ),
+
+			io:format( "INFILE: ~p ~n", [erlang:length(List1)] ),
+			io:format( "REFFILE: ~p ~n", [erlang:length(List0)] ),
+
+			FileLoadedNow = calendar:datetime_to_gregorian_seconds( erlang:localtime() ),
+
+			[ bctree_bucket:add_item( Pid, E, 1 ) || E <- List1 ],
+
+			LoadedNow = calendar:datetime_to_gregorian_seconds( erlang:localtime() ),
+
+
+			{ok, Size} = bctree_bucket:get_size( Pid ),
+			io:format("STORE SIZE: ~p / ~p ~n", [ lists:sum( Size ), erlang:length( Size) ]),
+
+			SizeNow = calendar:datetime_to_gregorian_seconds( erlang:localtime() ),
+
+			io:format("Searching for ~p items amoung ~p  ~n", [erlang:length( List0 ),erlang:length( List1 )]),		
+			Missing = lists:map( fun( E ) -> 
+							case bctree_bucket:get_item( Pid, E ) of
+								{ok, false} -> {E, missing};
+								{ok, Data} -> {E, exists};
+								{error, Reason} -> io:format("Error: ~p : ~p ~n", [E, Reason] );
+								Other -> io:forma("Unknown: ~p : ~p ~n", [E, Other])
+							end
+
+						end,
+					List0 ),
+
+			SearchedNow = calendar:datetime_to_gregorian_seconds( erlang:localtime() ),
+
+			io:format("Searched for ~p items amoung ~p ~n", [erlang:length( List0 ), erlang:length(List1)]),		
+			io:format("Number of missing items: ~p ~n",[erlang:length( missing(Missing) )]),
+
+			bctree_bucket:stop( Pid ),
+
+			ExitNow = calendar:datetime_to_gregorian_seconds( erlang:localtime() ),
+
+			io:format("===================================================~n"),			
+			io:format("Total time: ~p ~n", [ExitNow - StartNow]),
+			io:format("Loaded time: ~p ~n", [FileLoadedNow - StartNow]),
+			io:format("Size time: ~p ~n", [SizeNow - LoadedNow]),
+			io:format("Search time: ~p ~n", [SearchedNow - SizeNow]),
+			io:format("===================================================~n"),			
+
+
+			ok;
+		{error, Reason} -> {error, Reason}
+	end.
+
+missing( ElemList ) ->
+	missing( ElemList, [] ).
+
+missing( [], Res ) -> Res;
+
+missing( [{E,exists}|L], Res ) ->
+	missing( L, Res );
+
+missing( [{E, missing}|L], Res ) ->
+	missing( L, [E|Res]).	
+
 
 clear() -> 
 	ok.	
